@@ -1,0 +1,2 @@
+# HackOpportunity
+LinkedIn opportunity scraper
