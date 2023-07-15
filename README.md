@@ -1,2 +1,2 @@
-# HackOpportunity
-LinkedIn opportunity scraper
+# OpportunityFInder
+Mass-scale opportunity scraper
