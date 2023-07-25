@@ -1,4 +1,6 @@
 # Use Node.js base image
+# !!! Might cause issue due to name change of OG file app.js -> indexer.js
+
 FROM node:18-alpine
 
 # Set the working directory
@@ -20,4 +22,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Define the startup command
-CMD ["node", "build/app.js"]
+CMD ["node", "build/indexer.js"]
