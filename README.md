@@ -1,2 +1,2 @@
-# OpportunityFInder
+# OpportunityFinder
 Mass-scale opportunity scraper

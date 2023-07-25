@@ -4,8 +4,14 @@
 
 import axios from 'axios';
 import { load } from 'cheerio';
+import fs from 'fs';
 
-async function getMainHtml(url:string):Promise<string> {
+type Link = {
+    url: string, 
+    children: Set<string>
+}
+
+async function getHtml(url:string):Promise<string> {
     return await axios.get(url)
         .then((response) => {
             return response.data.replace(/[\r\n]+/g, ''); // display the HTML content without any spacing
@@ -15,8 +21,8 @@ async function getMainHtml(url:string):Promise<string> {
         });
 }
 
-function getUrls(text:string):Set<string> {
-    var $ = load(text);
+function getUrls(html:string):Set<string> {
+    var $ = load(html);
 
     const links = $('a');
 
@@ -38,15 +44,66 @@ function getUrls(text:string):Set<string> {
     return linkSet;
 }
 
-// TODO: Clean this out and get it out of a second promise (currently waiting for the promise object to be returned from the above method)
-// Sample link to scrape for now
-getMainHtml("https://www.janestreet.com/the-latest/").then((response) => {
-    console.log(getUrls(response));
-});
-
 // Going to use BFS
-// Going track of visited nodes to avoid cycles
+// Keep track of visited nodes to avoid cycles
+async function bfs(start: string): Promise<void> {
+    const visited: Set<string> = new Set();
+    const queue: Link[] = [{ url: start, children: new Set() }];
+    var numberOfSearches: number = 0;
+    var output = "";
 
-function bfs() {
-    // stub
+    while (queue.length > 0) {
+        //if (numberOfSearches > 50) return; // stop breadth first search after the max number of loops through
+        const currentLink = queue.shift()!;
+        const { url, children } = currentLink;
+        
+        if (visited.has(url)) {
+            console.log(`Cycle detected ${url}`);
+            continue;
+        }
+
+        console.log(`Processing: ${url}`);
+        visited.add(url);
+
+        try {
+            const html = await getHtml(url);
+            const links = getUrls(html);
+
+            const linkChildren: Set<string> = new Set();
+
+            output += html;
+
+            for (const childLink of links) {
+                console.log(`Found child link: ${childLink}`);
+
+                linkChildren.add(childLink);
+                visited.add(childLink);
+            }
+
+            currentLink.children = linkChildren;
+            queue.push(...Array.from(links).map((link) => ({ url: link, children: new Set<string>() })));
+        } catch (error) {
+            console.log(`Error fetching or parsing ${url}: ${error}`);
+        }
+
+        numberOfSearches++;
+    }
+
+    writeToTextFile("build/output.txt", output);
+}
+
+const startUrl = ""; // Fill this in: enter start url before compiling program
+if (startUrl.length == 0) throw Error("Pass in a URL to start the indexing");
+
+bfs(startUrl)
+    .then(() => console.log('BFS completed'))
+    .catch((error) => console.log('Error during BFS:', error));
+
+function writeToTextFile(filename: string, html: string): void{
+    try {
+        fs.writeFileSync(filename, html);
+        console.log(`File written to ${filename} successfully`);
+    } catch (err) {
+        console.log(err);
+    }
 }
