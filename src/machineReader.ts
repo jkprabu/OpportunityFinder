@@ -7,7 +7,7 @@ import { load } from 'cheerio';
 import fs from 'fs';
 
 // Define the URL of the webpage you want to scrape
-const url = 'https://careers.jpmorgan.com/global/en/students/programs'; 
+const url = 'https://www.janestreet.com/join-jane-street/programs-and-events/'; 
 
 // Function to scrape the webpage and extract data
 async function scrapeWebpage() {
@@ -16,31 +16,32 @@ async function scrapeWebpage() {
     const html = response.data;
     const $ = load(html);
 
-    // Your scraping logic here
-    // Example: Extracting all anchor tags' href attributes
-    const anchorTags: string[] = [];
-    $('a').each((index, element) => {
-      const href = $(element).attr('href');
-    //   console.log(element);
-      console.log($(element).attr('class'));
-      console.log("====================================================")
-      if (href) {
-        anchorTags.push(href);
-      }
-    });
+    console.log($);
+    // // Your scraping logic here
+    // // Example: Extracting all anchor tags' href attributes
+    // const anchorTags: string[] = [];
+    // $('a').each((index, element) => {
+    //   const href = $(element).attr('href');
+    // //   console.log(element);
+    //   console.log($(element).attr('class'));
+    //   console.log("====================================================")
+    //   if (href) {
+    //     anchorTags.push(href);
+    //   }
+    // });
 
-    // Store the extracted data in an object
-    const data = {
-      url,
-      anchorTags,
-      // Add more data fields as needed based on your scraping requirements
-    };
+    // // Store the extracted data in an object
+    // const data = {
+    //   url,
+    //   anchorTags,
+    //   // Add more data fields as needed based on your scraping requirements
+    // };
 
-    // Write the data to a JSON file
-    const jsonOutput = JSON.stringify(data, null, 2); // null and 2 are for formatting the JSON
-    fs.writeFileSync('output.json', jsonOutput, 'utf-8');
+    // // Write the data to a JSON file
+    // const jsonOutput = JSON.stringify(data, null, 2); // null and 2 are for formatting the JSON
+    // fs.writeFileSync('output.json', jsonOutput, 'utf-8');
 
-    console.log('Data has been scraped and stored in output.json.');
+    // console.log('Data has been scraped and stored in output.json.');
   } catch (error) {
     console.error('Error while scraping:', error);
   }

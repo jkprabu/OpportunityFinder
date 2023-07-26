@@ -1,7 +1,7 @@
 // To run the above code: 
 // First build the docker container: docker build -t my-web-server .
 // Second run the docker container: docker run -p 3000:3000 my-web-server
-
+import cheerio from 'cheerio';
 import axios from 'axios';
 import { load } from 'cheerio';
 import fs from 'fs';
@@ -16,9 +16,10 @@ async function getHtml(url:string):Promise<string> {
         .then((response) => {
             return response.data.replace(/[\r\n]+/g, ''); // display the HTML content without any spacing
         })
-        .catch((error) => {
-            return `Error: ${error}`;
-        });
+        // .catch((error) => {
+        //     return `Error: ${error}`;
+        // });
+
 }
 
 function getUrls(html:string):Set<string> {
@@ -31,14 +32,16 @@ function getUrls(html:string):Set<string> {
         let href = $(element).attr('href');
         const text = $(element).text();
         console.log(`Link ${index+1}:${text}(${href})`); // log the links that come through
-        if (href?.charAt(href.length - 1) == '/') {
-            href = href.substring(0, href.length - 1);
-        } 
+        // if (href?.charAt(href.length - 1) == '/') {
+        //     href = href.substring(0, href.length - 1);
+        // } 
 
-        if (href?.charAt(0) == '/') {
-            // only add if it is a sub-link. Do not go to an external website
-            linkSet.add(href as string);
-        }
+        linkSet.add(href as string);
+        
+        // if (href?.charAt(0) == '/') {
+        //     // only add if it is a sub-link. Do not go to an external website
+        //     linkSet.add(href as string);
+        // }
     })
 
     return linkSet;
@@ -90,9 +93,11 @@ async function bfs(start: string): Promise<void> {
     }
 
     writeToTextFile("build/output.txt", output);
+    cleanHtmlFile("build/output.txt", "build/new_output.txt");
 }
 
-const startUrl = ""; // Fill this in: enter start url before compiling program
+// const startUrl = "https://www.janestreet.com/join-jane-street/programs-and-events/";
+const startUrl = "https://buildyourfuture.withgoogle.com/programs";
 if (startUrl.length == 0) throw Error("Pass in a URL to start the indexing");
 
 bfs(startUrl)
@@ -107,3 +112,20 @@ function writeToTextFile(filename: string, html: string): void{
         console.log(err);
     }
 }
+
+function cleanHtmlFile(inputFileName: string, outputFileName: string) {
+    try {
+      const html = fs.readFileSync(inputFileName, 'utf-8');
+  
+      // Write the cleaned text content to the output file
+      // fs.writeFileSync(outputFileName, html.replace(/<[^>]*>/g, ''), 'utf-8');
+      // const pattern = /<[^>]*>|\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)|\{(?:[^}{]+|\{(?:[^}{]+|\{[^}{]*\})*\})*\}|\[(?:[^\][]+|\[(?:[^\][]+|\[[^\][]*])*])*\]/g
+      const pattern = /<[^>]*>|\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)|\{(?:[^}{]+|\{(?:[^}{]+|\{[^}{]*\})*\})*\}|\[(?:[^\][]+|\[(?:[^\][]+|\[[^\][]*])*])*\]|\;[^\;]*\;/g;
+      fs.writeFileSync(outputFileName, html.replace(pattern, ''), 'utf-8');
+  
+      console.log('HTML file cleaned and text content saved to', outputFileName);
+    } catch (error) {
+      console.error('Error while cleaning HTML file:', error);
+    }
+  }
+  
